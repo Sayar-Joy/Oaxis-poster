@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>OaxisMM Poster Generator • Movie & Series Banner Creator</title>
+  <meta name="description" content="Generate high-resolution 16:9 movie and series poster banners for oaxismm.com with exact reference fonts, positions, blur background, and Burmese typography.">
+  
+  <!-- Google Fonts: Outfit for English & Noto Sans Myanmar / Padauk for Burmese -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&family=Padauk:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- Preload Custom Display Fonts: A10_YoeShin (Primary Ref Font) & ThuNgalTan -->
+  <link rel="preload" href="A10_YoeShin-Bold.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="ThuNgalTan-Font-Regular.ttf" as="font" type="font/ttf" crossorigin>
+
+  <!-- Cropper.js CSS -->
+  <link rel="stylesheet" href="cropper.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-active-tab="controls">
+  <!-- Header Bar -->
+  <header class="top-nav">
+    <div class="nav-brand">
+      <div class="brand-badge">
+        <span class="brand-slash">/</span>
+        <span class="brand-text">oaxismm.com</span>
+      </div>
+      <span class="nav-divider"></span>
+      <h1 class="nav-title">Banner Studio</h1>
+    </div>
+
+    <div class="nav-actions">
+      <button id="quickSampleBtn" class="btn btn-secondary btn-sm" title="Load Superman sample poster">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+        <span class="btn-text">Sample</span>
+      </button>
+      <button id="resetAllBtn" class="btn btn-secondary btn-sm" title="Reset all settings to default">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+        <span class="btn-text">Reset</span>
+      </button>
+      <button id="copyImageBtn" class="btn btn-secondary btn-sm" title="Copy high-res image to clipboard">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+        <span class="btn-text">Copy</span>
+      </button>
+      <button id="downloadBannerBtn" class="btn btn-primary" title="Download Full HD 1920x1080 banner">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        <span class="btn-text">Download (PNG)</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile View Switcher Tabs (Only visible on screens < 900px) -->
+  <nav class="mobile-tabs-bar" id="mobileTabsBar" aria-label="Mobile View Mode">
+    <button type="button" class="mobile-tab-btn active" id="tabControlsBtn" data-tab="controls">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+      <span>Edit Content</span>
+    </button>
+    <button type="button" class="mobile-tab-btn" id="tabPreviewBtn" data-tab="preview">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+      <span>Live Banner</span>
+      <span class="live-pill">LIVE</span>
+    </button>
+  </nav>
+
+  <!-- Main Studio Workspace -->
+  <main class="studio-layout">
+    <!-- Left Sidebar: Controls -->
+    <aside class="control-panel" id="controlPanel">
+      <!-- Mobile Quick Jump Bar -->
+      <div class="mobile-jump-bar">
+        <span class="jump-status"><span class="pulse-dot"></span> Canvas live preview ready</span>
+        <button type="button" id="mobileJumpToPreviewBtn" class="btn btn-outline btn-sm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          <span>View Live Banner</span>
+        </button>
+      </div>
+
+      <!-- Format Aspect Ratio Selector Card -->
+      <div class="panel-card ratio-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="step-num">⚡</span>
+            <h2>Select Format Ratio</h2>
+          </div>
+          <span class="badge badge-accent" id="activeRatioBadge">16:9 Banner</span>
+        </div>
+
+        <div class="ratio-selector-grid">
+          <button type="button" class="ratio-card-btn active" data-ratio="16:9" id="btnRatio16x9">
+            <div class="ratio-preview-box">
+              <div class="ratio-box-visual box-16x9"></div>
+            </div>
+            <div class="ratio-card-info">
+              <span class="ratio-name">16:9 Banner</span>
+              <span class="ratio-dim">1920 × 1080 px</span>
+              <span class="ratio-desc">Landscape movie &amp; series banner</span>
+            </div>
+            <span class="ratio-check">✓</span>
+          </button>
+
+          <button type="button" class="ratio-card-btn" data-ratio="1:1" id="btnRatio1x1">
+            <div class="ratio-preview-box">
+              <div class="ratio-box-visual box-1x1"></div>
+            </div>
+            <div class="ratio-card-info">
+              <span class="ratio-name">1:1 Square</span>
+              <span class="ratio-dim">1080 × 1080 px</span>
+              <span class="ratio-desc">Social media &amp; feed square post</span>
+            </div>
+            <span class="ratio-check">✓</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Section 1: Poster Image -->
+      <div class="panel-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="step-num">1</span>
+            <h2>Poster Image &amp; Crop</h2>
+          </div>
+          <span class="badge badge-accent">Required</span>
+        </div>
+
+        <div class="upload-dropzone" id="dropzone">
+          <input type="file" id="posterFileInput" accept="image/*" class="file-input-hidden">
+          <div class="dropzone-content">
+            <div class="dropzone-icon">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+            </div>
+            <p class="dropzone-main"><strong>Choose an image</strong> or drag &amp; drop</p>
+            <p class="dropzone-hint">Supports JPG, PNG, WEBP • Paste (Ctrl+V) supported</p>
+          </div>
+        </div>
+
+        <div class="image-actions-row">
+          <button id="openCropModalBtn" class="btn btn-outline w-full" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.13 1L6 16a2 2 0 0 0 2 2h15"></path><path d="M1 6.13L16 6a2 2 0 0 1 2 2v15"></path></svg>
+            <span>Crop &amp; Frame Poster</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Section 2: Flexible Middle Header & Caption -->
+      <div class="panel-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="step-num">2</span>
+            <h2>Middle Header &amp; Caption</h2>
+          </div>
+          <span class="badge badge-subtle">Flexible Input</span>
+        </div>
+
+        <!-- Middle Header Input (Multi-line Support) -->
+        <div class="form-group">
+          <div class="label-row">
+            <label for="mainHeaderInput">Middle Header <span class="badge-lang">Multi-line (Enter)</span></label>
+            <span class="label-helper" id="mainHeaderCharCount">9 chars</span>
+          </div>
+          <div class="input-with-action textarea-with-action">
+            <textarea id="mainHeaderInput" class="font-preview-yoeshin" rows="1" placeholder="Enter header (e.g. Super Man)..." autocomplete="off" spellcheck="false">Super Man</textarea>
+            <button id="clearMainHeaderBtn" class="btn-icon btn-icon-top" title="Clear">✕</button>
+          </div>
+
+          <!-- Header Font Selection -->
+          <div class="form-group mt-xs">
+            <div class="label-row">
+              <label for="headerFontSelect">Header Font Style</label>
+              <span class="label-helper">Custom TTF</span>
+            </div>
+            <select id="headerFontSelect" class="select-custom">
+              <option value="ThuNgalTan" selected>ThuNgalTan (သူငယ်တန်း) ★ Default</option>
+              <option value="A10_YoeShin">A10_YoeShin Bold</option>
+              <option value="Noto Sans Myanmar">Noto Sans Myanmar</option>
+              <option value="Padauk">Padauk</option>
+              <option value="Outfit">Outfit (English Modern)</option>
+            </select>
+          </div>
+          
+          <!-- Quick Header Suggestions -->
+          <div class="chips-label">Quick Suggestions:</div>
+          <div class="quick-chips">
+            <button class="chip-btn chip-header" data-text="Super Man">Super Man</button>
+            <button class="chip-btn chip-header" data-text="Spider Man">Spider Man</button>
+            <button class="chip-btn chip-header" data-text="နဂါးငွေ့တန်း">နဂါးငွေ့တန်း</button>
+            <button class="chip-btn chip-header" data-text="အပိုင်းသစ် မိတ်ဆက်">အပိုင်းသစ် မိတ်ဆက်</button>
+            <button class="chip-btn chip-header" data-text="ဇာတ်ကားအသစ်">ဇာတ်ကားအသစ်</button>
+          </div>
+        </div>
+
+        <!-- Middle Caption / Sub-title Input (Multi-line Support) -->
+        <div class="form-group">
+          <div class="label-row">
+            <label for="captionInput">Middle Sub-title / Caption <span class="badge-lang">Multi-line (Enter)</span></label>
+            <span class="label-helper" id="captionCharCount">21 chars</span>
+          </div>
+          <div class="input-with-action textarea-with-action">
+            <textarea id="captionInput" class="font-preview-yoeshin" rows="2" placeholder="Enter sub-title (press Enter for new line)..." spellcheck="false">An Alien or a Human ?</textarea>
+            <button id="clearCaptionBtn" class="btn-icon btn-icon-top" title="Clear">✕</button>
+          </div>
+          
+          <!-- Quick Caption Suggestions -->
+          <div class="chips-label">Quick Suggestions (ကလစ်နှိပ်ပြီး ထည့်ပါ):</div>
+          <div class="quick-chips">
+            <button class="chip-btn chip-caption" data-text="An Alien or a Human ?">An Alien or a Human ?</button>
+            <button class="chip-btn chip-caption" data-text="An Alien&#10;or a Human ?">2 Lines (Sample)</button>
+            <button class="chip-btn chip-caption" data-text="မြန်မာစာတန်းထိုး စဆုံး">မြန်မာစာတန်းထိုး စဆုံး</button>
+            <button class="chip-btn chip-caption" data-text="HD အရည်အသွေးဖြင့် ကြည့်ရှုပါ">HD အရည်အသွေး</button>
+            <button class="chip-btn chip-caption" data-text="အပိုင်းသစ် ရရှိနိုင်ပါပြီ&#10;HD 1080p ဖြင့် ကြည့်ရှုပါ">အပိုင်းသစ် (၂ ကြောင်း)</button>
+            <button class="chip-btn chip-caption" data-text="ဇာတ်သိမ်းပိုင်း ထွက်ရှိပါပြီ">ဇာတ်သိမ်းပိုင်း</button>
+          </div>
+        </div>
+
+        <!-- Section 2B: Locked Fixed Reference Elements Info Card -->
+        <div class="fixed-specs-box">
+          <div class="fixed-specs-header">
+            <span class="lock-icon">🔒</span>
+            <span class="fixed-specs-title">Fixed Brand &amp; VIP Contacts</span>
+            <span class="badge-fixed">Non-editable • A10 YoeShin</span>
+          </div>
+
+          <div class="fixed-spec-row">
+            <div class="fixed-spec-name">Upper Header (Top-Left):</div>
+            <div class="fixed-spec-preview upper-preview-styled">
+              <span class="slash-yellow">/</span><span class="text-yellow">oaxismm.com</span> <span class="text-white">မှဘာသာပြန်တင်ဆက်သည်</span>
+            </div>
+          </div>
+
+          <div class="fixed-spec-row">
+            <div class="fixed-spec-name">Bottom Footer (Centered):</div>
+            <div class="fixed-spec-preview bottom-preview-styled">
+              Vip ဝင်ရန် Telegram - OAXis69 &nbsp;&bull;&nbsp; Viber - 09 668 668 584
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3: Fine Tuning & Visual Effects -->
+      <div class="panel-card accordion-card">
+        <details id="tuningDetails" open>
+          <summary class="card-header accordion-toggle">
+            <div class="card-title-group">
+              <span class="step-num">3</span>
+              <h2>Visual Effects &amp; Tuning</h2>
+            </div>
+            <svg class="chevron-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </summary>
+
+          <div class="accordion-body">
+            <!-- Blur & Overlay -->
+            <div class="slider-group">
+              <div class="slider-header">
+                <label for="bgBlurRange">Background Blur</label>
+                <span class="slider-val" id="bgBlurVal">28px</span>
+              </div>
+              <input type="range" id="bgBlurRange" min="0" max="60" value="28" step="1">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <label for="bgDarknessRange">Background Darkness / Dim</label>
+                <span class="slider-val" id="bgDarknessVal">25%</span>
+              </div>
+              <input type="range" id="bgDarknessRange" min="0" max="80" value="25" step="1">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <label for="posterRadiusRange">Poster Corner Rounding</label>
+                <span class="slider-val" id="posterRadiusVal">28px</span>
+              </div>
+              <input type="range" id="posterRadiusRange" min="0" max="50" value="28" step="1">
+            </div>
+
+            <div class="divider-subtle"></div>
+
+            <!-- Main Header Controls -->
+            <div class="slider-group">
+              <div class="slider-header">
+                <label for="mainHeaderSizeRange">Middle Header Size</label>
+                <span class="slider-val" id="mainHeaderSizeVal">118px</span>
+              </div>
+              <input type="range" id="mainHeaderSizeRange" min="40" max="160" value="118" step="2">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <label for="captionSizeRange">Middle Caption Size</label>
+                <span class="slider-val" id="captionSizeVal">70px</span>
+              </div>
+              <input type="range" id="captionSizeRange" min="24" max="110" value="70" step="2">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <label for="mainHeaderYOffsetRange">Middle Content Vertical Offset</label>
+                <span class="slider-val" id="mainHeaderYOffsetVal">0px</span>
+              </div>
+              <input type="range" id="mainHeaderYOffsetRange" min="-180" max="180" value="0" step="5">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <label for="strokeWidthRange">Text Outline Thickness</label>
+                <span class="slider-val" id="strokeWidthVal">11px</span>
+              </div>
+              <input type="range" id="strokeWidthRange" min="4" max="22" value="11" step="1">
+            </div>
+
+            <!-- Toggle switches -->
+            <div class="toggles-grid">
+              <label class="toggle-item">
+                <input type="checkbox" id="showLogoToggle" checked>
+                <span class="toggle-switch"></span>
+                <span class="toggle-label">Show Corner Logo</span>
+              </label>
+              <label class="toggle-item">
+                <input type="checkbox" id="posterShadowToggle" checked>
+                <span class="toggle-switch"></span>
+                <span class="toggle-label">Poster Drop Shadow</span>
+              </label>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Export Options & Details -->
+      <div class="panel-card export-card">
+        <div class="export-options">
+          <div class="export-format-selector">
+            <label class="radio-label">
+              <input type="radio" name="exportFormat" value="png" checked>
+              <span>PNG (Crisp Lossless)</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="exportFormat" value="jpeg">
+              <span>JPG (High Quality)</span>
+            </label>
+          </div>
+          
+          <div class="export-meta">
+            <span>Dimensions: <strong id="exportDimensionMeta">1920 × 1080 px (16:9)</strong></span>
+            <span>Target: <strong id="exportTargetMeta">oaxismm.com banner</strong></span>
+          </div>
+
+          <button id="downloadBannerBtn2" class="btn btn-primary btn-lg w-full">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span id="downloadBtnText2">Download (PNG)</span>
+          </button>
+
+          <button id="downloadBothBtn" class="btn btn-secondary w-full mt-xs" title="Download both 16:9 Banner and 1:1 Square images at once">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span>Download Both (16:9 + 1:1)</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Area: Live Interactive Preview -->
+    <section class="preview-area" id="previewArea">
+      <div class="preview-toolbar">
+        <div class="toolbar-left">
+          <span class="status-indicator"></span>
+          <div class="ratio-pill-group">
+            <button type="button" class="ratio-pill active" id="pillRatio16x9" data-ratio="16:9" title="Switch to 16:9 Banner">
+              <span class="ratio-pill-icon rect-16x9"></span>
+              <span>16:9 Banner</span>
+            </button>
+            <button type="button" class="ratio-pill" id="pillRatio1x1" data-ratio="1:1" title="Switch to 1:1 Square">
+              <span class="ratio-pill-icon rect-1x1"></span>
+              <span>1:1 Square</span>
+            </button>
+          </div>
+          <span class="badge badge-dim" id="resolutionBadge">1920 × 1080</span>
+        </div>
+        <div class="toolbar-right">
+          <button type="button" id="mobileJumpToControlsBtn" class="btn btn-subtle btn-sm mobile-only-btn" title="Back to edit content">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            <span>Edit</span>
+          </button>
+          <button id="zoomOutBtn" class="btn-icon-subtle" title="Zoom out">−</button>
+          <span id="zoomLevelDisplay" class="zoom-display">Fit</span>
+          <button id="zoomInBtn" class="btn-icon-subtle" title="Zoom in">+</button>
+          <button id="zoomFitBtn" class="btn-subtle btn-sm">Fit Screen</button>
+        </div>
+      </div>
+
+      <div class="canvas-viewport" id="viewport">
+        <div class="canvas-wrapper" id="canvasWrapper">
+          <!-- The master render canvas -->
+          <canvas id="posterCanvas" width="1920" height="1080"></canvas>
+          
+          <!-- Loading overlay indicator -->
+          <div id="renderLoading" class="render-loading hidden">
+            <div class="spinner"></div>
+            <span>Rendering high-resolution banner...</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-footer">
+        <div class="mobile-action-bar-inner">
+          <button id="mobileDownloadBtn" class="btn btn-primary btn-sm flex-1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span>Download (PNG)</span>
+          </button>
+          <button id="mobileCopyBtn" class="btn btn-secondary btn-sm flex-1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy</span>
+          </button>
+        </div>
+        <div class="hint-text">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          <span>Exact reference layout: A10 YoeShin font, upper yellow branding, blurred backdrop &amp; bottom VIP contacts.</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal: Crop Tool -->
+  <div id="cropModal" class="modal-overlay hidden">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.13 1L6 16a2 2 0 0 0 2 2h15"></path><path d="M1 6.13L16 6a2 2 0 0 1 2 2v15"></path></svg>
+          <h3>Crop &amp; Frame Poster Image</h3>
+        </div>
+        <button id="closeCropModalBtn" class="btn-close" aria-label="Close modal">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="crop-editor-wrapper">
+          <img id="cropImageElement" src="" alt="Image to crop">
+        </div>
+
+        <div class="crop-controls-bar">
+          <div class="aspect-ratio-selector">
+            <span class="control-label">Aspect Ratio:</span>
+            <button class="btn-chip active" data-ratio="0.730337">16:9 Banner (650:890)</button>
+            <button class="btn-chip" data-ratio="1.995689">1:1 Square (926:464)</button>
+            <button class="btn-chip" data-ratio="0.6666667">2 : 3</button>
+            <button class="btn-chip" data-ratio="1">1 : 1</button>
+            <button class="btn-chip" data-ratio="NaN">Freeform</button>
+          </div>
+
+          <div class="crop-transform-actions">
+            <button id="cropRotateLeftBtn" class="btn-subtle btn-sm" title="Rotate Counterclockwise 90°">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2.5 2v6h6M2.66 15.57a10 10 0 1 0 .57-8.38l-2.73 2.81"/></svg>
+              <span>-90°</span>
+            </button>
+            <button id="cropRotateRightBtn" class="btn-subtle btn-sm" title="Rotate Clockwise 90°">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l2.73 2.81"/></svg>
+              <span>+90°</span>
+            </button>
+            <button id="cropFlipHBtn" class="btn-subtle btn-sm" title="Flip Horizontal">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><polyline points="4 8 4 3 9 3"></polyline></svg>
+              <span>Flip</span>
+            </button>
+            <button id="cropResetBtn" class="btn-subtle btn-sm" title="Reset crop to original">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="cancelCropBtn" class="btn btn-secondary">Cancel</button>
+        <button id="applyCropBtn" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>Apply Crop to Poster</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast hidden">
+    <div class="toast-icon">✓</div>
+    <div class="toast-message" id="toastMessage">Success</div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="cropper.min.js"></script>
+  <script src="embedded-assets.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
